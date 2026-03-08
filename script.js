@@ -75,11 +75,17 @@ function loadData() {
 
 // GitHub Gist fetch function
 async function fetchFromGist() {
-    const gistId = localStorage.getItem('gistId');
+    // Check URL parameter first, then localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    let gistId = urlParams.get('gist') || localStorage.getItem('gistId');
+    
     if (!gistId) {
         console.log('No Gist ID configured');
         return null;
     }
+
+    // Save Gist ID for future use
+    localStorage.setItem('gistId', gistId);
 
     try {
         const response = await fetch(`https://api.github.com/gists/${gistId}`);
