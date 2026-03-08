@@ -80,8 +80,8 @@ async function fetchFromGist() {
     let gistId = urlParams.get('gist') || localStorage.getItem('gistId');
     
     if (!gistId) {
-        console.log('No Gist ID configured');
-        return null;
+        // Default Gist ID - embedded for public access
+        gistId = 'e5a359875c03455d4176c87007d94a4b';
     }
 
     // Save Gist ID for future use
