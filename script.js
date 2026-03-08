@@ -26,23 +26,16 @@ const DEFAULT_DATA = {
     projects: [
         {
             "title": "Ledger Equity",
-            "description": "LedgerEquity\nTransparent micro-donations for education equity on blockchain\nLow-fee platform for donating MATIC directly to verified schools, NGOs, and students. Recipients register needs (books, fees, uniforms, devices), admins approve, donors fund transparently with full on-chain tracking.\nFeatures:\n\nWallet connect + MetaMask\nRecipient need submission + Supabase storage\nAdmin approval dashboard\nReal-time funding progress\nClean light theme UI\nSupabase auth & database\nPolygon Mumbai (testnet) smart contract\n\nTech: React • Supabase • ethers.js • Polygon • Pinata IPFS\nGoal: Make education funding direct, verifiable, and middleman-free.",
+            "description": "LedgerEquity - Transparent micro-donations for education equity on blockchain. Low-fee platform for donating MATIC directly to verified schools, NGOs, and students.",
+            "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop",
             "tags": [
                 "blockchain",
                 "web3",
                 "education",
                 "donation",
-                "micro-donations",
                 "polygon",
                 "supabase",
-                "react",
-                "transparent-funding",
-                "charity",
-                "sdg4",
-                "hackathon",
-                "mvp",
-                "ipfs",
-                "pinata"
+                "react"
             ],
             "demo": "https://ledger-equity-4fxa.vercel.app/",
             "github": "https://github.com/karnesh19zexx/ledger-equity"

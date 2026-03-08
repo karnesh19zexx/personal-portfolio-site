@@ -1012,6 +1012,10 @@
                     <textarea id="project-desc" rows="3" required></textarea>
                 </div>
                 <div class="form-group">
+                    <label>Thumbnail Image URL</label>
+                    <input type="url" id="project-image" placeholder="https://example.com/image.png">
+                </div>
+                <div class="form-group">
                     <label>Tags (comma separated)</label>
                     <input type="text" id="project-tags" placeholder="React, Node.js, MongoDB">
                 </div>
@@ -1349,6 +1353,7 @@
                 const p = portfolioData.projects[index];
                 document.getElementById('project-title').value = p.title;
                 document.getElementById('project-desc').value = p.description;
+                document.getElementById('project-image').value = p.image || '';
                 document.getElementById('project-tags').value = p.tags.join(', ');
                 document.getElementById('project-demo').value = p.demo || '';
                 document.getElementById('project-github').value = p.github || '';
@@ -1363,6 +1368,7 @@
             const project = {
                 title: document.getElementById('project-title').value,
                 description: document.getElementById('project-desc').value,
+                image: document.getElementById('project-image').value,
                 tags: document.getElementById('project-tags').value.split(',').map(t => t.trim()).filter(t => t),
                 demo: document.getElementById('project-demo').value,
                 github: document.getElementById('project-github').value
