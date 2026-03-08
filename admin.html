@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | Portfolio</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="script.js"></script>
     <style>
         * {
             margin: 0;
@@ -725,10 +726,6 @@
                 <button type="submit" class="btn btn-primary">Login</button>
                 <p class="error-msg" id="loginError">Incorrect password. Please try again.</p>
             </form>
-            
-            <p style="margin-top: 24px; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
-                Default password: <code style="background: var(--bg-card); padding: 2px 8px; border-radius: 4px;">(check source code)</code>
-            </p>
         </div>
     </div>
 
@@ -1142,50 +1139,6 @@
             // First time - check against default
             return password === 'admin123';
         }
-        
-        // Load data function (duplicated from script.js)
-        function loadData() {
-            const defaultData = {
-                profile: {
-                    name: "Karnesh Kumar S",
-                    tagline: "A passionate developer building amazing digital experiences.",
-                    college: "Rajalakshmi Institute of Technology, Chennai",
-                    year: "2nd Year CSE",
-                    status: "Available for projects",
-                    github: "karnesh19zexx",
-                    leetcode: "KarneshKumar",
-                    email: "karnesh@example.com",
-                    about: "A passionate computer science student exploring the world of technology and building innovative solutions. Currently focused on web development, competitive programming, and machine learning."
-                },
-                social: [
-                    { name: "GitHub", url: "https://github.com/karnesh19zexx", icon: "github" },
-                    { name: "LinkedIn", url: "https://www.linkedin.com/in/karnesh-kumar-s-4abb6430b/", icon: "linkedin" },
-                    { name: "Twitter", url: "https://twitter.com/karnesh", icon: "twitter" },
-                    { name: "LeetCode", url: "https://leetcode.com/u/KarneshKumar/", icon: "leetcode" }
-                ],
-                skills: {
-                    "Programming Languages": ["Python", "JavaScript", "TypeScript", "Java", "C++", "C"],
-                    "Frontend": ["React", "Vue.js", "Next.js", "HTML5", "CSS3", "Tailwind CSS"],
-                    "Backend": ["Node.js", "Express", "Python", "FastAPI", "PostgreSQL", "MongoDB"],
-                    "Tools & DevOps": ["Git", "Docker", "AWS", "Linux", "VS Code", "Figma"]
-                },
-                projects: [],
-                updates: [],
-                tasks: [],
-                schedule: []
-            };
-            const saved = localStorage.getItem('portfolioData');
-            if (saved) {
-                return { ...defaultData, ...JSON.parse(saved) };
-            }
-            return defaultData;
-        }
-
-        function saveData(data) {
-            localStorage.setItem('portfolioData', JSON.stringify(data));
-        }
-
-        let portfolioData = loadData();
 
         // Check if already logged in
         if (localStorage.getItem('adminLoggedIn') === 'true') {

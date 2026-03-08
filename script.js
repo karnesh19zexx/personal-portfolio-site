@@ -14,7 +14,7 @@ const DEFAULT_DATA = {
     social: [
         { name: "GitHub", url: "https://github.com/karnesh19zexx", icon: "github" },
         { name: "LinkedIn", url: "https://www.linkedin.com/in/karnesh-kumar-s-4abb6430b/", icon: "linkedin" },
-        { name: "Twitter", url: "https://twitter.com/karnesh", icon: "twitter" },
+        { name: "Twitter", url: "https://x.com/karnesh1919", icon: "twitter" },
         { name: "LeetCode", url: "https://leetcode.com/u/KarneshKumar/", icon: "leetcode" }
     ],
     skills: {
@@ -23,28 +23,64 @@ const DEFAULT_DATA = {
         "Backend": ["Node.js", "Express", "Python", "FastAPI", "PostgreSQL", "MongoDB"],
         "Tools & DevOps": ["Git", "Docker", "AWS", "Linux", "VS Code", "Figma"]
     },
-    projects: [],
-    updates: [],
+    projects: [
+        {
+            title: "Portfolio Website",
+            description: "A stunning personal portfolio with glassmorphism design, live GitHub & LeetCode stats, and a private admin panel.",
+            tags: ["HTML", "CSS", "JavaScript"],
+            demo: "",
+            github: "https://github.com/karnesh19zexx"
+        },
+        {
+            title: "Project 2",
+            description: "Your second project description here.",
+            tags: ["React", "Node.js"],
+            demo: "",
+            github: ""
+        }
+    ],
+    updates: [
+        {
+            date: "2024-03-08",
+            title: "Portfolio Launch",
+            content: "Launched my personal portfolio website! Built with vanilla HTML, CSS, and JavaScript."
+        }
+    ],
     tasks: [],
     schedule: []
 };
 
-// Load data from localStorage or use defaults
+// Load data from localStorage ONLY - don't merge with defaults on first load
 function loadData() {
     const saved = localStorage.getItem('portfolioData');
+    console.log('Raw localStorage:', saved ? 'Found data' : 'No data'); // Debug
     if (saved) {
         try {
             return JSON.parse(saved);
         } catch (e) {
+            console.log('Parse error, using defaults');
             return DEFAULT_DATA;
         }
     }
+    console.log('Using default data');
     return DEFAULT_DATA;
 }
+
+// Listen for storage changes (sync between tabs)
+window.addEventListener('storage', function(e) {
+    if (e.key === 'portfolioData') {
+        portfolioData = loadData();
+        renderProfile();
+        renderSkills();
+        renderProjects();
+        renderUpdates();
+    }
+});
 
 // Save data to localStorage
 function saveData(data) {
     localStorage.setItem('portfolioData', JSON.stringify(data));
+    console.log('Data saved:', data); // Debug
 }
 
 // Initialize data
@@ -381,11 +417,28 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 async function init() {
     // Always load fresh data from localStorage
     portfolioData = loadData();
+    console.log('Loaded data:', portfolioData.projects); // Debug
     
+    // Only run rendering logic if we are on the public profile page (index.html)
+    if (!document.getElementById('user-name')) return;
+
     renderProfile();
     renderSkills();
     renderProjects();
     renderUpdates();
+    
+    // Auto-refresh data every 3 seconds to detect changes from admin
+    setInterval(() => {
+        const newData = loadData();
+        if (JSON.stringify(newData.projects) !== JSON.stringify(portfolioData.projects)) {
+            console.log('Data changed, reloading...');
+            portfolioData = newData;
+            renderProfile();
+            renderSkills();
+            renderProjects();
+            renderUpdates();
+        }
+    }, 3000);
     
     // Fetch GitHub stats
     const githubUsername = portfolioData.profile.github || 'karnesh';
