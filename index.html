@@ -872,47 +872,10 @@
         @media (max-width: 768px) {
             nav {
                 padding: 12px 16px;
-                flex-wrap: wrap;
-            }
-            
-            .logo {
-                font-size: 1.2rem;
             }
             
             .nav-links {
                 display: none;
-            }
-            
-            .mobile-nav-btn {
-                display: flex !important;
-            }
-            
-            /* Mobile menu - slide from top */
-            .nav-links.active {
-                display: flex;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                background: rgba(10, 10, 15, 0.95);
-                flex-direction: column;
-                justify-content: flex-start;
-                padding-top: 80px;
-                gap: 0;
-                z-index: 999;
-                height: 100vh;
-                backdrop-filter: blur(10px);
-            }
-            
-            .nav-links li {
-                border-bottom: 1px solid var(--border);
-            }
-            
-            .nav-links a {
-                display: block;
-                padding: 16px 20px;
-                font-size: 1.1rem;
-                text-align: left;
             }
             
             header {
@@ -950,21 +913,6 @@
                 justify-content: center;
             }
         }
-        
-        .mobile-nav-btn {
-            display: none;
-        }
-
-        .reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: all 0.8s ease;
-        }
-
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
     </style>
 </head>
 <body>
@@ -977,20 +925,15 @@
         <div class="grid-pattern"></div>
     </div>
 
-    <button class="mobile-nav-btn" onclick="toggleMobileNav()">
-        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
-
     <nav>
         <div class="logo">Karnesh</div>
-        <ul class="nav-links" id="navLinks">
-            <li style="text-align: right; padding: 10px 15px;"><a href="#" onclick="closeMobileNav()" style="background: var(--accent); border-radius: 8px; display: inline-block;">✕ Close</a></li>
-            <li><a href="#about" onclick="closeMobileNav()">About</a></li>
-            <li><a href="#github" onclick="closeMobileNav()">GitHub</a></li>
-            <li><a href="#leetcode" onclick="closeMobileNav()">LeetCode</a></li>
-            <li><a href="#skills" onclick="closeMobileNav()">Skills</a></li>
-            <li><a href="#projects" onclick="closeMobileNav()">Projects</a></li>
-            <li><a href="#updates" onclick="closeMobileNav()">Updates</a></li>
+        <ul class="nav-links">
+            <li><a href="#about">About</a></li>
+            <li><a href="#github">GitHub</a></li>
+            <li><a href="#leetcode">LeetCode</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#updates">Updates</a></li>
         </ul>
         <div style="display: flex; gap: 8px;">
             <button onclick="location.reload()" class="admin-btn" style="cursor: pointer;">🔄</button>
@@ -999,14 +942,6 @@
     </nav>
 
     <script>
-        function toggleMobileNav() {
-            document.getElementById('navLinks').classList.toggle('active');
-        }
-        
-        function closeMobileNav() {
-            document.getElementById('navLinks').classList.remove('active');
-        }
-    </script>
 
     <header>
         <div class="header-content">
