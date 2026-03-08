@@ -1671,6 +1671,30 @@
             }
         }
 
+        function exportToCode() {
+            const projectsCode = JSON.stringify(portfolioData.projects, null, 4);
+            const updatesCode = JSON.stringify(portfolioData.updates, null, 4);
+            const code = `// PASTE THIS INTO script.js - Replace the projects and updates arrays
+
+// Projects:
+const projectsData = ${projectsCode};
+
+// Updates:
+const updatesData = ${updatesCode};`;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Code copied to clipboard! Now paste it into script.js');
+            });
+            
+            // Also download as text file
+            const blob = new Blob([code], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'portfolio-projects.txt';
+            a.click();
+        }
+
         function exportData() {
             const data = JSON.stringify(portfolioData, null, 2);
             const blob = new Blob([data], { type: 'application/json' });
