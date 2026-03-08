@@ -73,6 +73,30 @@ function loadData() {
     return DEFAULT_DATA;
 }
 
+// GitHub Gist fetch function
+async function fetchFromGist() {
+    const gistId = localStorage.getItem('gistId');
+    if (!gistId) {
+        console.log('No Gist ID configured');
+        return null;
+    }
+
+    try {
+        const response = await fetch(`https://api.github.com/gists/${gistId}`);
+        if (response.ok) {
+            const gistData = await response.json();
+            const filename = Object.keys(gistData.files)[0];
+            const content = gistData.files[filename].content;
+            const data = JSON.parse(content);
+            console.log('Loaded from Gist!');
+            return data;
+        }
+    } catch (e) {
+        console.log('Gist fetch error:', e);
+    }
+    return null;
+}
+
 // Listen for storage changes (sync between tabs)
 window.addEventListener('storage', function (e) {
     if (e.key === 'portfolioData') {
@@ -422,11 +446,16 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 // Initialize
 async function init() {
-    // Always load fresh data from localStorage
-    portfolioData = loadData();
-    console.log('Loaded data:', portfolioData.projects); // Debug
+    // Try to fetch from Gist first, then localStorage, then defaults
+    const gistData = await fetchFromGist();
+    if (gistData) {
+        portfolioData = gistData;
+        localStorage.setItem('portfolioData', JSON.stringify(gistData));
+    } else {
+        portfolioData = loadData();
+    }
+    console.log('Loaded data:', portfolioData.projects);
 
-    // Only run rendering logic if we are on the public profile page (index.html)
     if (!document.getElementById('user-name')) return;
 
     renderProfile();
@@ -434,20 +463,20 @@ async function init() {
     renderProjects();
     renderUpdates();
 
-    // Auto-refresh data every 3 seconds to detect changes from admin
-    setInterval(() => {
-        const newData = loadData();
-        if (JSON.stringify(newData.projects) !== JSON.stringify(portfolioData.projects)) {
-            console.log('Data changed, reloading...');
-            portfolioData = newData;
+    // Auto-refresh every 30 seconds
+    setInterval(async () => {
+        const newGistData = await fetchFromGist();
+        if (newGistData && JSON.stringify(newGistData.projects) !== JSON.stringify(portfolioData.projects)) {
+            console.log('Gist data changed, reloading...');
+            portfolioData = newGistData;
+            localStorage.setItem('portfolioData', JSON.stringify(newGistData));
             renderProfile();
             renderSkills();
             renderProjects();
             renderUpdates();
         }
-    }, 3000);
+    }, 30000);
 
-    // Fetch GitHub stats
     const githubUsername = portfolioData.profile.github || 'karnesh';
     await fetchGitHubStats(githubUsername);
     await fetchGitHubContributions(githubUsername);
