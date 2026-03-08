@@ -694,10 +694,53 @@
             .sidebar {
                 transform: translateX(-100%);
                 z-index: 100;
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
             }
             
             .main-content {
                 margin-left: 0;
+            }
+            
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 101;
+            width: 44px;
+            height: 44px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 99;
+        }
+        
+        @media (max-width: 1024px) {
+            .sidebar-overlay.show {
+                display: block;
             }
         }
     </style>
@@ -730,6 +773,11 @@
     </div>
 
     <!-- Admin Layout -->
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
     <div class="admin-layout" id="adminLayout">
         <aside class="sidebar">
             <div class="sidebar-logo">
@@ -1202,6 +1250,11 @@
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('adminLayout').classList.add('active');
             loadAdminData();
+        }
+        
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('show');
         }
 
         // Logout
