@@ -25,25 +25,39 @@ const DEFAULT_DATA = {
     },
     projects: [
         {
-            title: "Portfolio Website",
-            description: "A stunning personal portfolio with glassmorphism design, live GitHub & LeetCode stats, and a private admin panel.",
-            tags: ["HTML", "CSS", "JavaScript"],
-            demo: "",
-            github: "https://github.com/karnesh19zexx"
-        },
-        {
-            title: "Project 2",
-            description: "Your second project description here.",
-            tags: ["React", "Node.js"],
-            demo: "",
-            github: ""
+            "title": "Ledger Equity",
+            "description": "LedgerEquity\nTransparent micro-donations for education equity on blockchain\nLow-fee platform for donating MATIC directly to verified schools, NGOs, and students. Recipients register needs (books, fees, uniforms, devices), admins approve, donors fund transparently with full on-chain tracking.\nFeatures:\n\nWallet connect + MetaMask\nRecipient need submission + Supabase storage\nAdmin approval dashboard\nReal-time funding progress\nClean light theme UI\nSupabase auth & database\nPolygon Mumbai (testnet) smart contract\n\nTech: React • Supabase • ethers.js • Polygon • Pinata IPFS\nGoal: Make education funding direct, verifiable, and middleman-free.",
+            "tags": [
+                "blockchain",
+                "web3",
+                "education",
+                "donation",
+                "micro-donations",
+                "polygon",
+                "supabase",
+                "react",
+                "transparent-funding",
+                "charity",
+                "sdg4",
+                "hackathon",
+                "mvp",
+                "ipfs",
+                "pinata"
+            ],
+            "demo": "https://ledger-equity-4fxa.vercel.app/",
+            "github": "https://github.com/karnesh19zexx/ledger-equity"
         }
     ],
     updates: [
         {
-            date: "2024-03-08",
-            title: "Portfolio Launch",
-            content: "Launched my personal portfolio website! Built with vanilla HTML, CSS, and JavaScript."
+            "date": "2026-02-05",
+            "title": "Crypto donation platform - LEDGER EQUITY",
+            "content": "LedgerEquity – Transparent Blockchain Micro-Donations for Education Equity\n\nOne-liner:\n\nDirect, low-fee MATIC donations from donor wallets to verified schools, NGOs and students for books, fees, uniforms, devices and more – everything traceable on Polygon.\n\nCore mission & SDG alignment\nSupports SDG 4 (Quality Education) by closing funding gaps in underserved regions through 100% on-chain transparency, near-zero fees and direct wallet-to-wallet transfers.\n\nKey Features:\n\nWallet connection (MetaMask) + Polygon Mumbai testnet\nRecipient need submission form (title, rich-text description via react-quill, amount in MATIC, wallet address, category, region, optional phone/org, multiple file uploads)\nFiles stored on Pinata/IPFS\nData saved to Supabase (pendingNeeds table)\nLight modern UI with clean cards and responsive layout\nBasic donation flow (click Donate → separate page with need info + amount input + tx confirmation)\nReal-time funding progress display (planned full sync via event listener)\n\nTech Stack\n\nFrontend: React 18 + Vite\nAuth & Database: Supabase (Auth + Postgres)\nBlockchain: ethers.js v6 + Polygon Mumbai + custom Solidity contract\nFile storage: Pinata/IPFS\nUI: Custom light CSS (no Tailwind)\nRich text: react-quill"
+        },
+        {
+            "date": "2026-03-07",
+            "title": "Portfolio Launch",
+            "content": "🚀 Just launched my personal portfolio website! 🎨\n✨ Features:\n- Glassmorphism UI design\n- Live GitHub stats & contribution graph\n- LeetCode problem-solving stats with charts\n- Skills organized by category\n- Projects showcase\n- Life updates section\n- Private admin panel to manage everything\n\n🛠 Tools & Technologies:\n- HTML5\n- CSS3 (Custom properties, animations)\n- JavaScript (Vanilla)\n- Chart.js (for visualizations)\n- LocalStorage (for data persistence)\n- GitHub API & LeetCode API\n📱 Fully responsive for all devices"
         }
     ],
     tasks: [],
@@ -67,7 +81,7 @@ function loadData() {
 }
 
 // Listen for storage changes (sync between tabs)
-window.addEventListener('storage', function(e) {
+window.addEventListener('storage', function (e) {
     if (e.key === 'portfolioData') {
         portfolioData = loadData();
         renderProfile();
@@ -92,11 +106,11 @@ async function fetchGitHubStats(username) {
         const response = await fetch(`https://api.github.com/users/${username}`);
         if (!response.ok) throw new Error('User not found');
         const data = await response.json();
-        
+
         document.getElementById('github-repos').textContent = data.public_repos || 0;
         document.getElementById('github-followers').textContent = data.followers || 0;
         document.getElementById('github-following').textContent = data.following || 0;
-        
+
         return data;
     } catch (error) {
         console.error('GitHub API Error:', error);
@@ -112,39 +126,39 @@ async function fetchGitHubContributions(username) {
     try {
         const response = await fetch(`https://github-contributions-api.jogruber.workers.dev/${username}`);
         const data = await response.json();
-        
+
         const grid = document.getElementById('contributions-grid');
         grid.innerHTML = '';
-        
+
         data.contributions.forEach(week => {
             const weekDiv = document.createElement('div');
             weekDiv.className = 'contribution-week';
-            
+
             week.contributionDays.forEach(day => {
                 const dayDiv = document.createElement('div');
                 dayDiv.className = 'contribution-day';
-                
+
                 if (day.contributionCount > 0) {
                     if (day.contributionCount >= 8) dayDiv.classList.add('level-4');
                     else if (day.contributionCount >= 5) dayDiv.classList.add('level-3');
                     else if (day.contributionCount >= 2) dayDiv.classList.add('level-2');
                     else dayDiv.classList.add('level-1');
                 }
-                
+
                 dayDiv.title = `${day.date}: ${day.contributionCount} contributions`;
                 weekDiv.appendChild(dayDiv);
             });
-            
+
             grid.appendChild(weekDiv);
         });
-        
+
         // Calculate total commits
         const totalCommits = data.contributions.reduce((sum, week) => {
             return sum + week.contributionDays.reduce((s, d) => s + d.contributionCount, 0);
         }, 0);
-        
+
         document.getElementById('stat-commits').textContent = totalCommits;
-        
+
     } catch (error) {
         console.error('Contributions API Error:', error);
     }
@@ -155,22 +169,22 @@ async function fetchLeetCodeStats(username) {
     try {
         const response = await fetch(`https://leetcode-api-fork.vercel.app/user/profile/${username}`);
         const data = await response.json();
-        
+
         if (data.status === 'error') throw new Error('User not found');
-        
+
         const total = data.totalSolved || 0;
         const easy = data.easySolved || 0;
         const medium = data.mediumSolved || 0;
         const hard = data.hardSolved || 0;
-        
+
         document.getElementById('leetcode-easy').textContent = easy;
         document.getElementById('leetcode-medium').textContent = medium;
         document.getElementById('leetcode-hard').textContent = hard;
         document.getElementById('leetcode-total').textContent = total;
-        
+
         // Update chart
         updateLeetCodeChart(easy, medium, hard);
-        
+
         return data;
     } catch (error) {
         console.error('LeetCode API Error:', error);
@@ -189,10 +203,10 @@ let topicChart = null;
 function updateLeetCodeChart(easy, medium, hard) {
     const ctx1 = document.getElementById('difficultyChart').getContext('2d');
     const ctx2 = document.getElementById('topicChart').getContext('2d');
-    
+
     if (difficultyChart) difficultyChart.destroy();
     if (topicChart) topicChart.destroy();
-    
+
     difficultyChart = new Chart(ctx1, {
         type: 'doughnut',
         data: {
@@ -213,7 +227,7 @@ function updateLeetCodeChart(easy, medium, hard) {
             }
         }
     });
-    
+
     // Placeholder for topic chart
     topicChart = new Chart(ctx2, {
         type: 'bar',
@@ -247,13 +261,13 @@ function renderProfile() {
     document.getElementById('user-year').textContent = p.year;
     document.getElementById('status-text').textContent = p.status;
     document.getElementById('about-description').textContent = p.about;
-    
+
     // Social links - clear first
     const socialContainer = document.getElementById('social-links');
     const footerSocial = document.getElementById('footer-social');
     socialContainer.innerHTML = '';
     footerSocial.innerHTML = '';
-    
+
     portfolioData.social.forEach(s => {
         const link = createSocialLink(s);
         socialContainer.appendChild(link.cloneNode(true));
@@ -286,11 +300,11 @@ function getSocialIcon(name) {
 function renderSkills() {
     const container = document.getElementById('skills-container');
     container.innerHTML = '';
-    
+
     Object.entries(portfolioData.skills).forEach(([category, skills]) => {
         const categoryDiv = document.createElement('div');
         categoryDiv.className = 'skill-category';
-        
+
         const icon = getCategoryIcon(category);
         categoryDiv.innerHTML = `
             <h3>${icon} ${category}</h3>
@@ -298,7 +312,7 @@ function renderSkills() {
                 ${skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
             </div>
         `;
-        
+
         container.appendChild(categoryDiv);
     });
 }
@@ -317,18 +331,18 @@ function getCategoryIcon(category) {
 function renderProjects() {
     const container = document.getElementById('projects-container');
     container.innerHTML = '';
-    
+
     if (portfolioData.projects.length === 0) {
         container.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">No projects added yet. Add some in the admin panel!</p>';
         return;
     }
-    
+
     portfolioData.projects.forEach(project => {
         const card = document.createElement('div');
         card.className = 'project-card';
-        
+
         const initial = project.title ? project.title.charAt(0).toUpperCase() : 'P';
-        
+
         card.innerHTML = `
             <div class="project-image">
                 ${project.image ? `<img src="${project.image}" alt="${project.title}">` : `<span class="project-image-placeholder">${initial}</span>`}
@@ -345,10 +359,10 @@ function renderProjects() {
                 </div>
             </div>
         `;
-        
+
         container.appendChild(card);
     });
-    
+
     document.getElementById('stat-projects').textContent = portfolioData.projects.length;
 }
 
@@ -356,22 +370,22 @@ function renderProjects() {
 function renderUpdates() {
     const container = document.getElementById('updates-container');
     container.innerHTML = '';
-    
+
     if (portfolioData.updates.length === 0) {
         container.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">No updates yet. Add some in the admin panel!</p>';
         return;
     }
-    
+
     portfolioData.updates.forEach(update => {
         const card = document.createElement('div');
         card.className = 'update-card';
-        
+
         card.innerHTML = `
             <div class="update-date">${update.date}</div>
             <h3 class="update-title">${update.title}</h3>
             <p class="update-content">${update.content}</p>
         `;
-        
+
         container.appendChild(card);
     });
 }
@@ -404,7 +418,7 @@ revealOnScroll();
 
 // Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
+    anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
@@ -418,7 +432,7 @@ async function init() {
     // Always load fresh data from localStorage
     portfolioData = loadData();
     console.log('Loaded data:', portfolioData.projects); // Debug
-    
+
     // Only run rendering logic if we are on the public profile page (index.html)
     if (!document.getElementById('user-name')) return;
 
@@ -426,7 +440,7 @@ async function init() {
     renderSkills();
     renderProjects();
     renderUpdates();
-    
+
     // Auto-refresh data every 3 seconds to detect changes from admin
     setInterval(() => {
         const newData = loadData();
@@ -439,16 +453,16 @@ async function init() {
             renderUpdates();
         }
     }, 3000);
-    
+
     // Fetch GitHub stats
     const githubUsername = portfolioData.profile.github || 'karnesh';
     await fetchGitHubStats(githubUsername);
     await fetchGitHubContributions(githubUsername);
-    
+
     // Fetch LeetCode stats
     const leetcodeUsername = portfolioData.profile.leetcode || 'karnesh';
     await fetchLeetCodeStats(leetcodeUsername);
-    
+
     // Update repo count
     const reposEl = document.getElementById('github-repos');
     if (reposEl.textContent !== '--') {

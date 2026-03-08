@@ -979,12 +979,16 @@
                     <div class="card-header">
                         <h3>Data Management</h3>
                     </div>
-                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;">
+                        <button class="btn btn-primary" onclick="exportToCode()">📋 Export for Sharing</button>
                         <button class="btn btn-outline" onclick="exportData()">Export Data</button>
                         <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">Import Data</button>
                         <input type="file" id="import-file" style="display: none" onchange="importData(this)">
                         <button class="btn btn-danger" onclick="resetData()">Reset All Data</button>
                     </div>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">
+                        ⚠️ <strong>Important:</strong> Use "Export for Sharing" to get code that you can add to script.js so everyone can see your projects on any device!
+                    </p>
                 </div>
             </div>
         </main>
