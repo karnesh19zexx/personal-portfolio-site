@@ -1,29 +1,3 @@
-# Karnesh Portfolio - Documentation
-
-## Files Location
-```
-/home/karnesh/karnesh_portfolio/
-├── index.html     # Public portfolio
-├── admin.html     # Admin panel
-└── script.js      # JavaScript
-```
-
-## How to Open
-
-**Public Portfolio:**
-```bash
-xdg-open /home/karnesh/karnesh_portfolio/index.html
-```
-
-**Admin Panel:**
-```bash
-xdg-open /home/karnesh/karnesh_portfolio/admin.html
-```
-
-## Login Details
-- **Password:** `admin123`
-- **Change Password:** Admin Panel → Settings → Change Password
-
 ## Features
 
 ### Public Portfolio (index.html)
