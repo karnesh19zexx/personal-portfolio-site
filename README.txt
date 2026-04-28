@@ -18,10 +18,9 @@
 - **Settings** - Change password, export/import data
 
 ## Your Links (Updated)
-- **GitHub:** https://github.com/karnesh19zexx
-- **LinkedIn:** https://www.linkedin.com/in/karnesh-kumar-s-4abb6430b/
-- **LeetCode:** https://leetcode.com/u/KarneshKumar/
-
+- **GitHub:** 
+- **LinkedIn:**
+- **LeetCode:** 
 ## Data Storage
 - Data is stored in browser's **LocalStorage**
 - Export/Import available in Admin → Settings
