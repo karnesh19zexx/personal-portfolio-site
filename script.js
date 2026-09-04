@@ -147,44 +147,87 @@ async function fetchGitHubStats(username) {
 // Fetch GitHub contributions
 async function fetchGitHubContributions(username) {
     try {
-        const response = await fetch(`https://github-contributions-api.jogruber.workers.dev/${username}`);
+        const response = await fetch(`https://ghca.duyet.net/v1/${username}?y=last`);
         const data = await response.json();
 
         const grid = document.getElementById('contributions-grid');
         grid.innerHTML = '';
 
-        data.contributions.forEach(week => {
-            const weekDiv = document.createElement('div');
-            weekDiv.className = 'contribution-week';
+        // API returns flat array of { date, count, level }
+        // Group into weeks (7 days each) for display
+        const days = data.contributions || [];
+        let weekDiv = document.createElement('div');
+        weekDiv.className = 'contribution-week';
 
-            week.contributionDays.forEach(day => {
-                const dayDiv = document.createElement('div');
-                dayDiv.className = 'contribution-day';
+        days.forEach((day, i) => {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'contribution-day';
 
-                if (day.contributionCount > 0) {
-                    if (day.contributionCount >= 8) dayDiv.classList.add('level-4');
-                    else if (day.contributionCount >= 5) dayDiv.classList.add('level-3');
-                    else if (day.contributionCount >= 2) dayDiv.classList.add('level-2');
-                    else dayDiv.classList.add('level-1');
-                }
+            if (day.count > 0) {
+                if (day.level >= 4 || day.count >= 8) dayDiv.classList.add('level-4');
+                else if (day.level >= 3 || day.count >= 5) dayDiv.classList.add('level-3');
+                else if (day.level >= 2 || day.count >= 2) dayDiv.classList.add('level-2');
+                else dayDiv.classList.add('level-1');
+            }
 
-                dayDiv.title = `${day.date}: ${day.contributionCount} contributions`;
-                weekDiv.appendChild(dayDiv);
-            });
+            dayDiv.title = `${day.date}: ${day.count} contributions`;
+            weekDiv.appendChild(dayDiv);
 
-            grid.appendChild(weekDiv);
+            // Start a new week every 7 days (or at end)
+            if ((i + 1) % 7 === 0 || i === days.length - 1) {
+                grid.appendChild(weekDiv);
+                weekDiv = document.createElement('div');
+                weekDiv.className = 'contribution-week';
+            }
         });
 
-        // Calculate total commits
-        const totalCommits = data.contributions.reduce((sum, week) => {
-            return sum + week.contributionDays.reduce((s, d) => s + d.contributionCount, 0);
-        }, 0);
+        // Render month labels above the grid
+        renderContributionMonths(days);
 
+        // Total contributions
+        const totalCommits = data.total?.lastYear ?? days.reduce((s, d) => s + d.count, 0);
         document.getElementById('stat-commits').textContent = totalCommits;
 
     } catch (error) {
         console.error('Contributions API Error:', error);
+        document.getElementById('contributions-grid').innerHTML = '<p style="color: var(--text-muted); padding: 20px;">Could not load contributions.</p>';
     }
+}
+
+// Render month labels above the contribution grid
+function renderContributionMonths(days) {
+    const weeksNeeded = Math.ceil(days.length / 7);
+    const monthsContainer = document.getElementById('contributions-months');
+    if (!monthsContainer) return;
+    monthsContainer.innerHTML = '';
+
+    // Track position of each week
+    let monthLabels = [];
+    let prevMonth = '';
+
+    days.forEach((day, i) => {
+        const weekIndex = Math.floor(i / 7);
+        const d = new Date(day.date + 'T00:00:00');
+        const month = d.toLocaleString('en', { month: 'short' });
+        // Only label when month changes and past first column
+        if (month !== prevMonth && i > 0) {
+            monthLabels.push({ month, weekIndex });
+        }
+        prevMonth = month;
+    });
+
+    // Build the flex row: one span per week width
+    let html = '';
+    let labelIdx = 0;
+    for (let w = 0; w < weeksNeeded; w++) {
+        let text = '&nbsp;';
+        if (labelIdx < monthLabels.length && monthLabels[labelIdx].weekIndex === w) {
+            text = monthLabels[labelIdx].month;
+            labelIdx++;
+        }
+        html += `<span style="flex: 1; white-space: nowrap;">${text}</span>`;
+    }
+    monthsContainer.innerHTML = html;
 }
 
 // LeetCode API Integration
@@ -245,7 +288,7 @@ function updateLeetCodeChart(easy, medium, hard) {
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: { color: '#fff' }
+                    labels: { color: '#1a1a2e' }
                 }
             }
         }
@@ -259,7 +302,7 @@ function updateLeetCodeChart(easy, medium, hard) {
             datasets: [{
                 label: 'Problems',
                 data: [Math.floor(easy * 0.3), Math.floor(medium * 0.25), Math.floor(hard * 0.2), Math.floor(easy * 0.15), Math.floor(medium * 0.1)],
-                backgroundColor: ['#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6']
+                backgroundColor: ['#8b0000', '#b91c1c', '#c62828', '#dc2626', '#ef5350']
             }]
         },
         options: {
@@ -268,8 +311,8 @@ function updateLeetCodeChart(easy, medium, hard) {
                 legend: { display: false }
             },
             scales: {
-                x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                x: { ticks: { color: '#1a1a2e' }, grid: { color: 'rgba(0,0,0,0.1)' } },
+                y: { ticks: { color: '#1a1a2e' }, grid: { color: 'rgba(0,0,0,0.1)' } }
             }
         }
     });
@@ -415,15 +458,17 @@ function renderUpdates() {
 
 // Cursor effect
 const cursor = document.getElementById('cursor');
-document.addEventListener('mousemove', (e) => {
-    cursor.style.left = e.clientX - 10 + 'px';
-    cursor.style.top = e.clientY - 10 + 'px';
-});
+if (cursor) {
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX - 10 + 'px';
+        cursor.style.top = e.clientY - 10 + 'px';
+    });
 
-document.querySelectorAll('a, button, .project-card, .skill-tag, .update-card').forEach(el => {
-    el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-    el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
-});
+    document.querySelectorAll('a, button, .project-card, .skill-tag, .update-card').forEach(el => {
+        el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+        el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+}
 
 // Scroll reveal
 const revealElements = document.querySelectorAll('.reveal');
@@ -442,8 +487,10 @@ revealOnScroll();
 // Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href === '#') return; // skip empty/in-page anchors (e.g. admin nav)
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const target = document.querySelector(href);
         if (target) {
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -452,13 +499,18 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 // Initialize
 async function init() {
-    // Try to fetch from Gist first, then localStorage, then defaults
-    const gistData = await fetchFromGist();
-    if (gistData) {
-        portfolioData = gistData;
-        localStorage.setItem('portfolioData', JSON.stringify(gistData));
+    // Local data takes priority. Only seed from Gist if there's no local data yet.
+    let localData = loadData();
+    if (!localStorage.getItem('portfolioData')) {
+        const gistData = await fetchFromGist();
+        if (gistData) {
+            portfolioData = gistData;
+            localStorage.setItem('portfolioData', JSON.stringify(gistData));
+        } else {
+            portfolioData = localData;
+        }
     } else {
-        portfolioData = loadData();
+        portfolioData = localData;
     }
     console.log('Loaded data:', portfolioData.projects);
 
@@ -469,18 +521,13 @@ async function init() {
     renderProjects();
     renderUpdates();
 
-    // Auto-refresh every 30 seconds
+    // Auto-refresh stats periodically (without clobbering local data from Gist)
     setInterval(async () => {
-        const newGistData = await fetchFromGist();
-        if (newGistData && JSON.stringify(newGistData.projects) !== JSON.stringify(portfolioData.projects)) {
-            console.log('Gist data changed, reloading...');
-            portfolioData = newGistData;
-            localStorage.setItem('portfolioData', JSON.stringify(newGistData));
-            renderProfile();
-            renderSkills();
-            renderProjects();
-            renderUpdates();
-        }
+        const githubUsername = portfolioData?.profile?.github || 'karnesh';
+        await fetchGitHubStats(githubUsername);
+        await fetchGitHubContributions(githubUsername);
+        const leetcodeUsername = portfolioData?.profile?.leetcode || 'karnesh';
+        await fetchLeetCodeStats(leetcodeUsername);
     }, 30000);
 
     const githubUsername = portfolioData.profile.github || 'karnesh';
