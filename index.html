@@ -849,6 +849,74 @@
             font-size: 0.95rem;
         }
 
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .contact-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+        }
+
+        .contact-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent);
+            transform: translateY(-6px);
+        }
+
+        .contact-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            color: var(--accent);
+        }
+
+        .contact-icon svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        .contact-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .contact-value {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .contact-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .contact-link:hover {
+            color: var(--accent);
+        }
+
         footer {
             padding: 60px 40px;
             border-top: 1px solid var(--border);
@@ -985,6 +1053,7 @@
             <li><a href="#skills">Skills</a></li>
             <li><a href="#projects">Projects</a></li>
             <li><a href="#updates">Updates</a></li>
+            <li><a href="#contact">Contact</a></li>
         </ul>
         <div style="display: flex; gap: 8px;">
             <button onclick="location.reload()" class="admin-btn" style="cursor: pointer;">🔄</button>
@@ -1203,6 +1272,35 @@
         
         <div class="updates-grid reveal" id="updates-container">
             <!-- Populated by JavaScript -->
+        </div>
+    </section>
+
+    <section id="contact">
+        <div class="section-header reveal">
+            <p class="section-label">Contact</p>
+            <h2>Get In Touch</h2>
+            <p class="section-desc">Have a project in mind or just want to say hi? Reach out!</p>
+        </div>
+
+        <div class="contact-grid reveal">
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                </div>
+                <div class="contact-label">Phone</div>
+                <div class="contact-value">
+                    <a class="contact-link" href="tel:+918925636654">+91 8925636654</a>
+                </div>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <div class="contact-label">Email</div>
+                <div class="contact-value">
+                    <a class="contact-link" href="mailto:karnesh1919@gmail.com">karnesh1919@gmail.com</a>
+                </div>
+            </div>
         </div>
     </section>
 
