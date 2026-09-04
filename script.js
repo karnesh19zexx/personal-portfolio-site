@@ -302,7 +302,7 @@ function updateLeetCodeChart(easy, medium, hard) {
             datasets: [{
                 label: 'Problems',
                 data: [Math.floor(easy * 0.3), Math.floor(medium * 0.25), Math.floor(hard * 0.2), Math.floor(easy * 0.15), Math.floor(medium * 0.1)],
-                backgroundColor: ['#ec4899', '#f43f5e', '#ef4444', '#fb7185', '#fda4af']
+                backgroundColor: ['#8b0000', '#b91c1c', '#c62828', '#dc2626', '#ef5350']
             }]
         },
         options: {
@@ -458,15 +458,17 @@ function renderUpdates() {
 
 // Cursor effect
 const cursor = document.getElementById('cursor');
-document.addEventListener('mousemove', (e) => {
-    cursor.style.left = e.clientX - 10 + 'px';
-    cursor.style.top = e.clientY - 10 + 'px';
-});
+if (cursor) {
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX - 10 + 'px';
+        cursor.style.top = e.clientY - 10 + 'px';
+    });
 
-document.querySelectorAll('a, button, .project-card, .skill-tag, .update-card').forEach(el => {
-    el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-    el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
-});
+    document.querySelectorAll('a, button, .project-card, .skill-tag, .update-card').forEach(el => {
+        el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+        el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+}
 
 // Scroll reveal
 const revealElements = document.querySelectorAll('.reveal');
@@ -485,8 +487,10 @@ revealOnScroll();
 // Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href === '#') return; // skip empty/in-page anchors (e.g. admin nav)
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const target = document.querySelector(href);
         if (target) {
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
