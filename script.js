@@ -499,13 +499,18 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 // Initialize
 async function init() {
-    // Try to fetch from Gist first, then localStorage, then defaults
-    const gistData = await fetchFromGist();
-    if (gistData) {
-        portfolioData = gistData;
-        localStorage.setItem('portfolioData', JSON.stringify(gistData));
+    // Local data takes priority. Only seed from Gist if there's no local data yet.
+    let localData = loadData();
+    if (!localStorage.getItem('portfolioData')) {
+        const gistData = await fetchFromGist();
+        if (gistData) {
+            portfolioData = gistData;
+            localStorage.setItem('portfolioData', JSON.stringify(gistData));
+        } else {
+            portfolioData = localData;
+        }
     } else {
-        portfolioData = loadData();
+        portfolioData = localData;
     }
     console.log('Loaded data:', portfolioData.projects);
 
@@ -516,18 +521,13 @@ async function init() {
     renderProjects();
     renderUpdates();
 
-    // Auto-refresh every 30 seconds
+    // Auto-refresh stats periodically (without clobbering local data from Gist)
     setInterval(async () => {
-        const newGistData = await fetchFromGist();
-        if (newGistData && JSON.stringify(newGistData.projects) !== JSON.stringify(portfolioData.projects)) {
-            console.log('Gist data changed, reloading...');
-            portfolioData = newGistData;
-            localStorage.setItem('portfolioData', JSON.stringify(newGistData));
-            renderProfile();
-            renderSkills();
-            renderProjects();
-            renderUpdates();
-        }
+        const githubUsername = portfolioData?.profile?.github || 'karnesh';
+        await fetchGitHubStats(githubUsername);
+        await fetchGitHubContributions(githubUsername);
+        const leetcodeUsername = portfolioData?.profile?.leetcode || 'karnesh';
+        await fetchLeetCodeStats(leetcodeUsername);
     }, 30000);
 
     const githubUsername = portfolioData.profile.github || 'karnesh';
