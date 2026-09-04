@@ -1,0 +1,35 @@
+## Features
+
+### Public Portfolio (index.html)
+- Live GitHub stats (repos, followers, contributions graph)
+- LeetCode stats with charts
+- Profile section with college info
+- Skills by category
+- Projects showcase
+- Life updates section
+
+### Admin Panel (admin.html)
+- **Dashboard** - Overview stats
+- **Profile** - Edit name, tagline, college, social links
+- **Skills** - Add/remove skills by category
+- **Projects** - Add/edit/delete projects
+- **Updates** - Add life updates
+- **Daily Planner** - Tasks & schedule
+- **Settings** - Change password, export/import data
+
+## Your Links (Updated)
+- **GitHub:** 
+- **LinkedIn:**
+- **LeetCode:** 
+## Data Storage
+- Data is stored in browser's **LocalStorage**
+- Export/Import available in Admin → Settings
+- Clear browser data = lose all changes
+
+## Known Issues
+- GitHub/LeetCode APIs may have CORS issues when opened as file://
+- Use a local server for best results: `npx serve /home/karnesh/karnesh_portfolio`
+
+## To Deploy Online
+1. Upload files to GitHub Pages or any web hosting
+2. Or use Vercel/Netlify (free)
