@@ -6,6 +6,7 @@
     <title>Admin Panel | Portfolio</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="config.js"></script>
     <script src="script.js"></script>
     <style>
         * {
@@ -753,6 +754,37 @@
                 display: block;
             }
         }
+
+        /* Cloud Sync Badge */
+        .sync-badge {
+            margin: 8px 16px 16px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.04);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sync-badge:hover {
+            background: rgba(0, 0, 0, 0.08);
+        }
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--warning);
+            flex-shrink: 0;
+        }
+        .sync-badge.synced .sync-dot { background: var(--success); }
+        .sync-badge.syncing .sync-dot { background: #3b82f6; animation: syncPulse 1s infinite; }
+        .sync-badge.error .sync-dot { background: var(--danger); }
+        .sync-badge.local-only .sync-dot { background: var(--warning); }
+        @keyframes syncPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.8); } }
+
     </style>
 </head>
 <body>
@@ -794,7 +826,10 @@
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15l-2 5-9-9 9-9 9 9-9 9z"/></svg>
                 Admin
             </div>
-            
+            <div id="cloudSyncStatusBadge" class="sync-badge local-only" onclick="switchPage('settings')" title="Click to view Cloud Settings">
+                <span class="sync-dot"></span>
+                <span id="syncStatusLabel">Cloud: Local Only</span>
+            </div>
             <nav>
                 <a href="#" class="nav-item active" data-page="dashboard">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -1037,32 +1072,37 @@
                     <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
                 </div>
                 
-                <div class="card">
-                    <div class="card-header">
-                        <h3>🔗 GitHub Gist Sync</h3>
+                <div class="card" id="cloud-sync-card">
+                    <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
+                        <h3>🌐 GitHub Gist Cloud Sync</h3>
+                        <span id="card-sync-pill" class="sync-badge local-only" style="margin: 0;">Local Only</span>
                     </div>
                     <p style="color: var(--text-secondary); margin-bottom: 16px;">
-                        Connect to GitHub Gist to sync your projects/updates everywhere automatically!
+                        Connect to GitHub Gist so that every project, skill, bio, or update you save automatically goes live on all other devices and for visitors!
                     </p>
                     <div class="form-group">
-                        <label>GitHub Personal Access Token</label>
-                        <input type="password" id="gist-token" placeholder="ghp_xxxx...">
+                        <label>GitHub Personal Access Token (PAT)</label>
+                        <input type="password" id="gist-token" placeholder="ghp_xxxx or github_pat_xxxx...">
                         <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
-                            Create at: GitHub → Settings → Developer settings → Personal access tokens → Generate new token (gist scope)
+                            Requires <code>gist</code> permission. Create one at: <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--accent); text-decoration: underline;">GitHub Tokens</a>.
                         </p>
                     </div>
                     <div class="form-group">
                         <label>Gist ID</label>
-                        <input type="text" id="gist-id" placeholder="e.g., abc123def456...">
+                        <input type="text" id="gist-id" placeholder="e.g. e5a359875c03455d4176c87007d94a4b">
                         <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
-                            Your Gist URL: https://gist.github.com/username/<strong>gist-id</strong>
+                            The hash in your Gist URL: https://gist.github.com/username/<strong>gist-id</strong>. (Also set in <code>config.js</code> so other devices find it).
                         </p>
                     </div>
-                    <div style="display: flex; gap: 12px;">
-                        <button class="btn btn-primary" onclick="saveGistConfig()">Save Gist Config</button>
-                        <button class="btn btn-success" onclick="syncToGist()">🚀 Sync to Gist</button>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;">
+                        <button type="button" class="btn btn-primary" onclick="saveGistConfig()">💾 Save & Test Connection</button>
+                        <button type="button" class="btn btn-outline" onclick="autoCreateGist()">⚡ Auto-Create New Gist</button>
+                        <button type="button" class="btn btn-success" onclick="syncToGist()">🚀 Push to Cloud Now</button>
+                        <button type="button" class="btn btn-outline" onclick="pullFromCloud()">📥 Pull from Cloud</button>
                     </div>
-                    <p id="gist-status" style="margin-top: 12px; font-size: 0.9rem;"></p>
+                    <div id="gist-status-box" style="margin-top: 16px; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.03); display: none;">
+                        <p id="gist-status" style="font-size: 0.9rem; margin: 0;"></p>
+                    </div>
                 </div>
                 
                 <div class="card">
@@ -1875,82 +1915,224 @@ const updatesData = ${updatesCode};`;
             a.click();
         }
 
-        // GitHub Gist Functions
-        function saveGistConfig() {
-            const token = document.getElementById('gist-token').value;
-            const gistId = document.getElementById('gist-id').value;
-            if (token && gistId) {
-                localStorage.setItem('gistToken', token);
-                localStorage.setItem('gistId', gistId);
-                document.getElementById('gist-status').innerHTML = '✅ Config saved!';
-                document.getElementById('gist-status').style.color = 'var(--success)';
-            } else {
-                document.getElementById('gist-status').innerHTML = '⚠️ Please enter both Token and Gist ID';
-                document.getElementById('gist-status').style.color = 'var(--warning)';
+        // Cloud Sync Engine
+        function updateCloudBadge(state, text) {
+            const badge = document.getElementById('cloudSyncStatusBadge');
+            const label = document.getElementById('syncStatusLabel');
+            const pill = document.getElementById('card-sync-pill');
+            if (badge) {
+                badge.className = 'sync-badge ' + state;
+            }
+            if (label) label.textContent = text;
+            if (pill) {
+                pill.className = 'sync-badge ' + state;
+                pill.textContent = text.replace('Cloud: ', '');
             }
         }
 
-        async function syncToGist() {
+        function showGistStatus(msg, isSuccess, isWarning) {
+            const box = document.getElementById('gist-status-box');
+            const statusEl = document.getElementById('gist-status');
+            if (!box || !statusEl) return;
+            box.style.display = 'block';
+            statusEl.innerHTML = msg;
+            if (isSuccess) statusEl.style.color = 'var(--success)';
+            else if (isWarning) statusEl.style.color = 'var(--warning)';
+            else statusEl.style.color = 'var(--danger)';
+        }
+
+        // Auto-called on every admin save
+        window.triggerCloudSync = async function(data) {
             const token = localStorage.getItem('gistToken');
-            const gistId = localStorage.getItem('gistId');
-            
-            if (!token || !gistId) {
-                document.getElementById('gist-status').innerHTML = '⚠️ Please configure Gist first!';
+            const gistId = localStorage.getItem('gistId') || (typeof PORTFOLIO_CONFIG !== 'undefined' ? PORTFOLIO_CONFIG.gistId : '');
+
+            if (!token) {
+                updateCloudBadge('local-only', 'Cloud: Local Only');
+                return;
+            }
+            if (!gistId) {
+                updateCloudBadge('local-only', 'Cloud: No Gist ID');
                 return;
             }
 
-            document.getElementById('gist-status').innerHTML = '⏳ Syncing...';
+            updateCloudBadge('syncing', 'Cloud: Syncing...');
 
-            const data = {
-                projects: portfolioData.projects,
-                updates: portfolioData.updates,
-                skills: portfolioData.skills,
-                profile: portfolioData.profile,
-                social: portfolioData.social
+            const payload = {
+                profile: data.profile || {},
+                social: data.social || [],
+                skills: data.skills || {},
+                projects: data.projects || [],
+                updates: data.updates || [],
+                tasks: data.tasks || [],
+                schedule: data.schedule || [],
+                updatedAt: new Date().toISOString()
             };
 
             try {
-                // First, get the current Gist to preserve filename
-                const getResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    headers: { 'Authorization': `token ${token}` }
-                });
-                
-                const gistData = await getResponse.json();
-                const filename = Object.keys(gistData.files)[0] || 'portfolio-data.json';
-
-                // Update the Gist
                 const response = await fetch(`https://api.github.com/gists/${gistId}`, {
                     method: 'PATCH',
                     headers: {
-                        'Authorization': `token ${token}`,
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        description: 'Portfolio Data',
+                        description: 'Portfolio Cloud Data (Updated ' + new Date().toLocaleTimeString() + ')',
                         files: {
-                            [filename]: {
-                                content: JSON.stringify(data, null, 2)
+                            'portfolio-data.json': {
+                                content: JSON.stringify(payload, null, 2)
                             }
                         }
                     })
                 });
 
                 if (response.ok) {
-                    document.getElementById('gist-status').innerHTML = '✅ Synced to Gist! Everyone will see the updates.';
-                    document.getElementById('gist-status').style.color = 'var(--success)';
+                    updateCloudBadge('synced', 'Cloud: Synced ✅');
+                    showGistStatus('✅ Live on cloud! All devices will see this update.', true);
                 } else {
-                    const error = await response.json();
-                    document.getElementById('gist-status').innerHTML = '❌ Error: ' + error.message;
-                    document.getElementById('gist-status').style.color = 'var(--danger)';
+                    const errData = await response.json().catch(() => ({}));
+                    updateCloudBadge('error', 'Cloud: Sync Error ❌');
+                    showGistStatus('❌ Cloud sync failed: ' + (errData.message || response.statusText), false);
                 }
-            } catch (error) {
-                document.getElementById('gist-status').innerHTML = '❌ Error: ' + error.message;
+            } catch (err) {
+                updateCloudBadge('error', 'Cloud: Network Error ❌');
+                showGistStatus('❌ Network error syncing to cloud: ' + err.message, false);
+            }
+        };
+
+        async function saveGistConfig() {
+            const token = document.getElementById('gist-token').value.trim();
+            const gistId = document.getElementById('gist-id').value.trim();
+            
+            if (token) localStorage.setItem('gistToken', token);
+            if (gistId) localStorage.setItem('gistId', gistId);
+            
+            showGistStatus('Testing connection to GitHub Gist...', false, true);
+            
+            if (!gistId) {
+                showGistStatus('⚠️ Please enter a Gist ID or click "Auto-Create New Gist".', false, true);
+                return;
+            }
+
+            try {
+                const headers = { 'Accept': 'application/vnd.github.v3+json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+                const res = await fetch(`https://api.github.com/gists/${gistId}?_t=${Date.now()}`, { headers });
+                
+                if (res.ok) {
+                    showGistStatus('✅ Connected successfully! Your Gist is accessible. Auto-sync is active.', true);
+                    updateCloudBadge('synced', 'Cloud: Synced ✅');
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    showGistStatus('❌ Gist not found or unauthorized: ' + (err.message || res.status), false);
+                    updateCloudBadge('error', 'Cloud: Not Found ❌');
+                }
+            } catch (e) {
+                showGistStatus('❌ Connection error: ' + e.message, false);
+                updateCloudBadge('error', 'Cloud: Error ❌');
             }
         }
 
-        // Load saved Gist config
-        if (localStorage.getItem('gistId')) {
-            document.getElementById('gist-id').value = localStorage.getItem('gistId');
+        async function autoCreateGist() {
+            const token = document.getElementById('gist-token').value.trim();
+            if (!token) {
+                alert('Please enter your GitHub Personal Access Token first!');
+                return;
+            }
+
+            showGistStatus('Creating new public Gist on GitHub...', false, true);
+
+            const payload = {
+                profile: portfolioData.profile || {},
+                social: portfolioData.social || [],
+                skills: portfolioData.skills || {},
+                projects: portfolioData.projects || [],
+                updates: portfolioData.updates || [],
+                tasks: portfolioData.tasks || [],
+                schedule: portfolioData.schedule || [],
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                const res = await fetch('https://api.github.com/gists', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: 'Personal Portfolio Cloud Data',
+                        public: true,
+                        files: {
+                            'portfolio-data.json': {
+                                content: JSON.stringify(payload, null, 2)
+                            }
+                        }
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const newId = data.id;
+                    localStorage.setItem('gistToken', token);
+                    localStorage.setItem('gistId', newId);
+                    document.getElementById('gist-id').value = newId;
+                    showGistStatus(`✅ Successfully created Gist (ID: <code>${newId}</code>)!<br><strong>Note:</strong> Update <code>gistId: '${newId}'</code> in <code>config.js</code> so all visitors and other devices load it!`, true);
+                    updateCloudBadge('synced', 'Cloud: Synced ✅');
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    showGistStatus('❌ Failed to create Gist: ' + (err.message || res.status), false);
+                }
+            } catch (e) {
+                showGistStatus('❌ Error creating Gist: ' + e.message, false);
+            }
+        }
+
+        async function syncToGist() {
+            if (typeof window.triggerCloudSync === 'function') {
+                showGistStatus('Pushing current portfolio data to Cloud...', false, true);
+                await window.triggerCloudSync(portfolioData);
+            }
+        }
+
+        async function pullFromCloud() {
+            const gistId = document.getElementById('gist-id').value.trim() || 
+                           localStorage.getItem('gistId') || 
+                           (typeof PORTFOLIO_CONFIG !== 'undefined' ? PORTFOLIO_CONFIG.gistId : '');
+            if (!gistId) {
+                alert('Please enter or save a Gist ID first.');
+                return;
+            }
+
+            showGistStatus('Pulling latest cloud data...', false, true);
+
+            try {
+                const cloudData = await fetchFromGist();
+                if (cloudData) {
+                    portfolioData = cloudData;
+                    localStorage.setItem('portfolioData', JSON.stringify(cloudData));
+                    loadAdminData();
+                    showGistStatus('✅ Loaded fresh data from Cloud successfully!', true);
+                    updateCloudBadge('synced', 'Cloud: Synced ✅');
+                } else {
+                    showGistStatus('❌ Could not retrieve valid data from this Gist.', false);
+                }
+            } catch (e) {
+                showGistStatus('❌ Error pulling from cloud: ' + e.message, false);
+            }
+        }
+
+        // Initialize Gist inputs on admin load
+        const savedGistId = localStorage.getItem('gistId') || (typeof PORTFOLIO_CONFIG !== 'undefined' ? PORTFOLIO_CONFIG.gistId : '');
+        if (savedGistId) {
+            document.getElementById('gist-id').value = savedGistId;
+        }
+        if (localStorage.getItem('gistToken')) {
+            document.getElementById('gist-token').value = localStorage.getItem('gistToken');
+            updateCloudBadge('synced', 'Cloud: Connected');
+        } else {
+            updateCloudBadge('local-only', 'Cloud: Local Only');
         }
 
         function exportData() {

@@ -73,32 +73,48 @@ function loadData() {
     return DEFAULT_DATA;
 }
 
-// GitHub Gist fetch function
+// GitHub Gist fetch function with multi-device sync and cache-busting
 async function fetchFromGist() {
-    // Check URL parameter first, then localStorage
     const urlParams = new URLSearchParams(window.location.search);
-    let gistId = urlParams.get('gist') || localStorage.getItem('gistId');
+    let gistId = urlParams.get('gist') || 
+                 (typeof PORTFOLIO_CONFIG !== 'undefined' ? PORTFOLIO_CONFIG.gistId : '') || 
+                 localStorage.getItem('gistId');
     
     if (!gistId) {
-        // Default Gist ID - embedded for public access
         gistId = 'e5a359875c03455d4176c87007d94a4b';
     }
 
-    // Save Gist ID for future use
-    localStorage.setItem('gistId', gistId);
-
     try {
-        const response = await fetch(`https://api.github.com/gists/${gistId}`);
+        const cacheBuster = `_t=${Date.now()}`;
+        const response = await fetch(`https://api.github.com/gists/${gistId}?${cacheBuster}`, {
+            headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+        
         if (response.ok) {
             const gistData = await response.json();
-            const filename = Object.keys(gistData.files)[0];
-            const content = gistData.files[filename].content;
+            const files = gistData.files;
+            if (!files || Object.keys(files).length === 0) return null;
+
+            const targetFilename = (typeof PORTFOLIO_CONFIG !== 'undefined' && PORTFOLIO_CONFIG.filename) 
+                ? PORTFOLIO_CONFIG.filename 
+                : 'portfolio-data.json';
+            const filename = files[targetFilename] ? targetFilename : Object.keys(files)[0];
+            const fileObj = files[filename];
+            
+            let content = fileObj.content;
+            if (fileObj.truncated && fileObj.raw_url) {
+                const rawResp = await fetch(`${fileObj.raw_url}?${cacheBuster}`);
+                content = await rawResp.text();
+            }
+            
             const data = JSON.parse(content);
-            console.log('Loaded from Gist!');
+            console.log('Loaded latest data from GitHub Gist!');
             return data;
+        } else {
+            console.warn('Gist API returned status:', response.status);
         }
     } catch (e) {
-        console.log('Gist fetch error:', e);
+        console.warn('Gist fetch error:', e);
     }
     return null;
 }
@@ -114,10 +130,16 @@ window.addEventListener('storage', function (e) {
     }
 });
 
-// Save data to localStorage
+// Save data to localStorage and auto-sync to cloud if in admin
 function saveData(data) {
+    data.updatedAt = new Date().toISOString();
     localStorage.setItem('portfolioData', JSON.stringify(data));
-    console.log('Data saved:', data); // Debug
+    console.log('Data saved locally');
+
+    // Trigger auto-sync to cloud (defined in admin panel)
+    if (typeof window.triggerCloudSync === 'function') {
+        window.triggerCloudSync(data);
+    }
 }
 
 // Initialize data
@@ -499,50 +521,70 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 // Initialize
 async function init() {
-    // Local data takes priority. Only seed from Gist if there's no local data yet.
-    let localData = loadData();
-    if (!localStorage.getItem('portfolioData')) {
-        const gistData = await fetchFromGist();
-        if (gistData) {
-            portfolioData = gistData;
-            localStorage.setItem('portfolioData', JSON.stringify(gistData));
-        } else {
-            portfolioData = localData;
-        }
-    } else {
-        portfolioData = localData;
+    // 1. Instantly render cached data or defaults with zero lag
+    portfolioData = loadData();
+    const isPublicPage = !!document.getElementById('user-name');
+
+    if (isPublicPage) {
+        renderProfile();
+        renderSkills();
+        renderProjects();
+        renderUpdates();
     }
-    console.log('Loaded data:', portfolioData.projects);
 
-    if (!document.getElementById('user-name')) return;
+    // 2. Fetch fresh cloud data from GitHub Gist in the background
+    try {
+        const cloudData = await fetchFromGist();
+        if (cloudData && typeof cloudData === 'object' && (cloudData.projects || cloudData.profile || cloudData.updates || cloudData.skills)) {
+            const currentStr = localStorage.getItem('portfolioData');
+            const cloudStr = JSON.stringify(cloudData);
 
-    renderProfile();
-    renderSkills();
-    renderProjects();
-    renderUpdates();
+            if (!currentStr || currentStr !== cloudStr) {
+                console.log('Fresh cloud updates detected! Refreshing portfolio...');
+                portfolioData = cloudData;
+                localStorage.setItem('portfolioData', cloudStr);
 
-    // Auto-refresh stats periodically (without clobbering local data from Gist)
-    setInterval(async () => {
-        const githubUsername = portfolioData?.profile?.github || 'karnesh';
-        await fetchGitHubStats(githubUsername);
-        await fetchGitHubContributions(githubUsername);
-        const leetcodeUsername = portfolioData?.profile?.leetcode || 'karnesh';
-        await fetchLeetCodeStats(leetcodeUsername);
-    }, 30000);
+                if (isPublicPage) {
+                    renderProfile();
+                    renderSkills();
+                    renderProjects();
+                    renderUpdates();
+                }
+            } else {
+                console.log('Local data is already up to date with cloud.');
+            }
+        }
+    } catch (err) {
+        console.warn('Cloud sync error, continuing with cached data:', err);
+    }
 
-    const githubUsername = portfolioData.profile.github || 'karnesh';
+    if (!isPublicPage) return;
+
+    // 3. Stats Integration (GitHub and LeetCode)
+    const githubUsername = portfolioData?.profile?.github || 
+                           (typeof PORTFOLIO_CONFIG !== 'undefined' ? PORTFOLIO_CONFIG.githubUsername : 'karnesh19zexx');
+    const leetcodeUsername = portfolioData?.profile?.leetcode || 
+                             (typeof PORTFOLIO_CONFIG !== 'undefined' ? PORTFOLIO_CONFIG.leetcodeUsername : 'KarneshKumar');
+
     await fetchGitHubStats(githubUsername);
     await fetchGitHubContributions(githubUsername);
-
-    // Fetch LeetCode stats
-    const leetcodeUsername = portfolioData.profile.leetcode || 'karnesh';
     await fetchLeetCodeStats(leetcodeUsername);
 
-    // Update repo count
     const reposEl = document.getElementById('github-repos');
-    if (reposEl.textContent !== '--') {
-        document.getElementById('stat-repos').textContent = reposEl.textContent;
+    if (reposEl && reposEl.textContent !== '--') {
+        const statRepos = document.getElementById('stat-repos');
+        if (statRepos) statRepos.textContent = reposEl.textContent;
     }
+
+    // Auto-refresh stats periodically
+    const refreshMs = (typeof PORTFOLIO_CONFIG !== 'undefined' ? PORTFOLIO_CONFIG.refreshInterval : 60000) || 60000;
+    setInterval(async () => {
+        const gh = portfolioData?.profile?.github || 'karnesh19zexx';
+        const lc = portfolioData?.profile?.leetcode || 'KarneshKumar';
+        await fetchGitHubStats(gh);
+        await fetchGitHubContributions(gh);
+        await fetchLeetCodeStats(lc);
+    }, refreshMs);
 }
 
 // Run on load
